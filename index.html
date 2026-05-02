@@ -223,6 +223,17 @@
   .chart-legend{display:flex;gap:16px;margin-top:10px;}
   .chart-leg-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text2);}
   .chart-leg-dot{width:8px;height:3px;border-radius:1px;}
+
+  /* EXPORT/IMPORT */
+  .data-section{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);}
+  .data-row{display:flex;gap:8px;margin-top:0.75rem;}
+  .data-btn{flex:1;padding:11px 0;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;transition:all 0.15s;text-align:center;}
+  .data-btn:hover{background:var(--bg3);color:var(--text);}
+  .data-btn.export{color:var(--blue);border-color:var(--blue);}
+  .data-btn.export:hover{background:var(--blue-dim);}
+  .data-btn.import{color:var(--amber);border-color:var(--amber);}
+  .data-btn.import:hover{background:var(--amber-dim);}
+  #import-file{display:none;}
   .status-bar{text-align:center;font-size:10px;color:var(--text3);letter-spacing:0.05em;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);}
   .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:8px;font-size:12px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:100;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -460,6 +471,15 @@
           <option value="conge">Congé</option>
         </select>
         <button class="add-btn" onclick="addSpecial()">+ ajouter</button>
+      </div>
+    </div>
+    <div class="data-section">
+      <div class="config-title">Sauvegarde des données</div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:0.75rem;line-height:1.6">Exporte tes données pour ne pas les perdre si tu vides Safari. Réimporte-les pour tout restaurer.</p>
+      <div class="data-row">
+        <button class="data-btn export" onclick="exportData()">↓ exporter</button>
+        <button class="data-btn import" onclick="document.getElementById('import-file').click()">↑ importer</button>
+        <input type="file" id="import-file" accept=".json" onchange="importData(event)">
       </div>
     </div>
     <div class="btn-row">
@@ -1053,6 +1073,42 @@ document.addEventListener('click',e=>{
 document.getElementById('tx-schedule').addEventListener('change',()=>{
   document.getElementById('tx-custom-plage').style.display=document.getElementById('tx-schedule').value==='custom'?'block':'none';
 });
+
+
+// EXPORT / IMPORT
+function exportData(){
+  const payload={cfg,data,exportedAt:new Date().toISOString(),version:'v4'};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='life-rpg-backup-'+date+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('Sauvegarde exportée');
+}
+
+function importData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const payload=JSON.parse(e.target.result);
+      if(!payload.cfg||!payload.data)throw new Error('Format invalide');
+      if(!confirm('Importer cette sauvegarde du '+new Date(payload.exportedAt).toLocaleDateString('fr-FR')+'\nCela remplacera toutes tes données actuelles.'))return;
+      cfg={...cfg,...payload.cfg};
+      data={...data,...payload.data};
+      save();
+      toast('Données restaurées');
+      go('dashboard');
+    }catch(err){
+      toast('Fichier invalide');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
