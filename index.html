@@ -751,20 +751,23 @@ function update(){
   const neg=cagnotte<0;
   const hm=document.getElementById('hero-main');
   const hb=document.getElementById('hero-block');
+  // Format grand chiffre : toujours 2 décimales, pas de séparateur milliers ambigu
   const absC=Math.abs(cagnotte);
-  const w=Math.floor(absC);const c=Math.round((absC-w)*100).toString().padStart(2,'0');
-  hm.innerHTML=(neg?'−':'')+w.toLocaleString('fr-FR')+','+c+' <span class="cur">€</span>';
+  const formatted=absC.toFixed(2).replace('.',',');
+  hm.innerHTML=(neg?'−':'')+formatted+' <span class="cur">€</span>';
   hm.className='hero-main'+(neg?' negative':'');
   hb.className='hero-block'+(neg?' negative':'');
   document.getElementById('hero-sub').innerHTML='gagné aujourd\'hui : <span>'+fmtAbs(st.earned)+'</span>';
-  // Mini calcul hero
-  const hcRev=earnedMonth+txRev;
-  document.getElementById('hc-rev').textContent='+'+fmtAbs(hcRev);
-  document.getElementById('hc-charges').textContent='−'+fmtAbs(chargesProrata);
-  document.getElementById('hc-savings').textContent='−'+fmtAbs(savingsProrata);
+  // Mini calcul hero — aligné sur la même base que le grand chiffre
+  const hcRev=earnedMonth+txRev; // revenus proratisés + exceptionnels
+  const hcReport=md.report||0;
+  const hcCagnotte=hcRev - chargesProrata - savingsProrata - txDep + hcReport;
+  document.getElementById('hc-rev').textContent='+'+hcRev.toFixed(2).replace('.',',')+' €';
+  document.getElementById('hc-charges').textContent='−'+chargesProrata.toFixed(2).replace('.',',')+' €';
+  document.getElementById('hc-savings').textContent='−'+savingsProrata.toFixed(2).replace('.',',')+' €';
   const hcTotal=document.getElementById('hc-total');
-  hcTotal.textContent=(cagnotte>=0?'+':'−')+fmtAbs(cagnotte);
-  hcTotal.className='hc-val hc-total'+(cagnotte<0?' negative':'');
+  hcTotal.textContent=(hcCagnotte>=0?'+':'−')+Math.abs(hcCagnotte).toFixed(2).replace('.',',')+' €';
+  hcTotal.className='hc-val hc-total'+(hcCagnotte<0?' negative':'');
 
   // Badge
   const badge=document.getElementById('day-badge');
