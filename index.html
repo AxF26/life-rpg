@@ -83,7 +83,7 @@
   .plage-sep{width:20px;height:4px;background:var(--bg4);border-radius:2px;flex-shrink:0;}
 
   /* QUICK ACTIONS */
-  .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+  .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;margin-top:1rem;}
   .qa-btn{padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;transition:all 0.15s;font-family:var(--mono);}
   .qa-btn:hover{border-color:var(--border2);background:var(--bg3);}
   .qa-btn .qa-icon{font-size:16px;margin-bottom:6px;display:block;}
@@ -256,7 +256,7 @@
   #import-file{display:none;}
 
   /* RETOUR A ZERO */
-  .return-zero{display:none;margin-top:8px;padding:8px 12px;background:rgba(247,37,133,0.08);border:1px solid rgba(247,37,133,0.2);border-radius:8px;font-size:11px;color:#f72585;letter-spacing:0.02em;}
+  .return-zero{display:none;margin-top:10px;margin-bottom:4px;padding:10px 14px;background:rgba(247,37,133,0.06);border:1px solid rgba(247,37,133,0.18);border-radius:10px;font-size:11px;color:#f72585;letter-spacing:0.02em;line-height:1.5;}
   .return-zero.show{display:block;}
   .return-zero strong{color:var(--text);}
 
@@ -269,6 +269,26 @@
   .tx-days-badge{font-size:9px;color:var(--text3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-variant-numeric:tabular-nums;}
   .tx-days-tooltip{display:none;position:absolute;right:0;top:20px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--text2);white-space:nowrap;z-index:50;line-height:1.5;}
   .tx-days-info:hover .tx-days-tooltip{display:block;}
+
+  .m-toggle-btn.dep.active{background:rgba(247,37,133,0.15);border-color:var(--pink);color:var(--pink);}
+  .m-toggle-btn.rev.active{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+
+  /* POPUP SAUVEGARDE */
+  .save-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:flex-end;justify-content:center;padding:1rem;}
+  .save-popup-overlay.show{display:flex;}
+  .save-popup{background:rgba(18,21,42,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 20px 20px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+  .save-popup-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
+  .save-popup-sub{font-size:11px;color:var(--text2);margin-bottom:1.25rem;line-height:1.6;}
+  .save-popup-btns{display:flex;gap:8px;}
+  .save-popup-btn{flex:1;padding:11px;font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+  .save-popup-btn:hover{background:var(--bg3);}
+  .save-popup-btn.primary{color:var(--green);border-color:var(--green);}
+  .save-popup-btn.primary:hover{background:var(--green-dim);}
+
+  .tx-edit{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;font-family:var(--mono);padding:4px 6px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all 0.15s;}
+  .tx-edit:hover{color:var(--blue);background:var(--blue-dim);}
+  .m-btn.danger{color:var(--pink);border-color:rgba(247,37,133,0.4);}
+  .m-btn.danger:hover{background:var(--red-dim);}
   .status-bar{text-align:center;font-size:10px;color:var(--text3);letter-spacing:0.05em;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);}
   .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:8px;font-size:12px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:100;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -488,7 +508,7 @@
 
     <div class="section-tag" style="margin-bottom:0.75rem">ajouter un mouvement</div>
     <div class="m-toggle">
-      <button class="m-toggle-btn active" id="tab-dep" onclick="switchTab('dep')">− dépense</button>
+      <button class="m-toggle-btn active dep" id="tab-dep" onclick="switchTab('dep')">− dépense</button>
       <button class="m-toggle-btn" id="tab-rev" onclick="switchTab('rev')">+ revenu exceptionnel</button>
     </div>
     <div class="m-field">
@@ -653,8 +673,20 @@
       </div>
     </div>
     <div class="m-btn-row">
+      <button class="m-btn danger" id="m-delete" onclick="deleteFromModal()" style="display:none">supprimer</button>
       <button class="m-btn" onclick="closeModal()">annuler</button>
       <button class="m-btn green" id="m-confirm" onclick="confirmModal()">confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-popup-overlay" id="save-popup">
+  <div class="save-popup">
+    <div class="save-popup-title">💾 Pense à sauvegarder</div>
+    <div class="save-popup-sub">Ça fait 3 jours que tu n'as pas exporté tes données. Un export rapide et tu es tranquille.</div>
+    <div class="save-popup-btns">
+      <button class="save-popup-btn" onclick="dismissSavePopup()">plus tard</button>
+      <button class="save-popup-btn primary" onclick="exportFromPopup()">↓ exporter</button>
     </div>
   </div>
 </div>
@@ -924,8 +956,8 @@ function update(){
 let currentTab='dep';
 function switchTab(t){
   currentTab=t;
-  document.getElementById('tab-dep').className='m-toggle-btn'+(t==='dep'?' active':'');
-  document.getElementById('tab-rev').className='m-toggle-btn'+(t==='rev'?' active':'');
+  document.getElementById('tab-dep').className='m-toggle-btn dep'+(t==='dep'?' active':'');
+  document.getElementById('tab-rev').className='m-toggle-btn rev'+(t==='rev'?' active':'');
   document.getElementById('tx-schedule-section').style.display=t==='rev'?'block':'none';
 }
 
@@ -970,7 +1002,7 @@ function renderTxList(){
       </div>
       <div class="tx-right">
         <div class="tx-amount ${isDep?'c-red':'c-green'}">${isDep?'−':'+'}${fmtAbs(tx.amount)}${joursInfo}</div>
-        <button class="tx-rm" onclick="removeTx('${tx.id}')">✕</button>
+        <button class="tx-edit" onclick="editTx('${tx.id}')">✏️</button>
       </div>
     </div>`;
   }).join('');
@@ -994,6 +1026,55 @@ function toggleCustomPlage(){
 
 // MODAL
 let modalType='dep';
+let editingTxId=null;
+
+function editTx(id){
+  // Trouver la transaction dans tous les mois
+  let foundTx=null, foundMk=null;
+  Object.keys(data.monthData).forEach(mk=>{
+    const tx=data.monthData[mk].transactions.find(t=>String(t.id)===String(id));
+    if(tx){foundTx=tx;foundMk=mk;}
+  });
+  if(!foundTx) return;
+
+  editingTxId=id;
+  modalType=foundTx.type;
+
+  // Ouvrir la modal
+  const isDep=foundTx.type==='dep';
+  document.getElementById('modal-title').textContent=isDep?'Modifier la dépense':'Modifier le revenu exceptionnel';
+  document.getElementById('modal-title').className='modal-title '+(isDep?'red':'green');
+  document.getElementById('m-confirm').className='m-btn '+(isDep?'red':'green');
+  document.getElementById('m-schedule-wrap').style.display=isDep?'none':'block';
+  document.getElementById('m-delete').style.display='block';
+
+  // Pré-remplir
+  document.getElementById('m-name').value=foundTx.name||'';
+  document.getElementById('m-amount').value=foundTx.amount||'';
+  const d=new Date(foundTx.ts);
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('m-planned-date').value=local;
+  if(foundTx.schedule){
+    document.getElementById('m-schedule').value=foundTx.schedule;
+    toggleCustomPlage();
+    if(foundTx.plageS) document.getElementById('m-plage-s').value=foundTx.plageS;
+    if(foundTx.plageE) document.getElementById('m-plage-e').value=foundTx.plageE;
+  }
+
+  document.getElementById('modal').classList.add('show');
+  setTimeout(()=>document.getElementById('m-name').focus(),100);
+}
+
+function deleteFromModal(){
+  if(!editingTxId) return;
+  if(!confirm('Supprimer ce mouvement ?')) return;
+  Object.keys(data.monthData).forEach(mk=>{
+    data.monthData[mk].transactions=data.monthData[mk].transactions.filter(t=>String(t.id)!==String(editingTxId));
+  });
+  save(); closeModal(); renderTxList();
+  toast('Mouvement supprimé');
+}
+
 function openModal(type){
   modalType=type;
   const isDep=type==='dep';
@@ -1001,6 +1082,8 @@ function openModal(type){
   document.getElementById('modal-title').className='modal-title '+(isDep?'red':'green');
   document.getElementById('m-confirm').className='m-btn '+(isDep?'red':'green');
   document.getElementById('m-schedule-wrap').style.display=isDep?'none':'block';
+  editingTxId=null;
+  document.getElementById('m-delete').style.display='none';
   document.getElementById('m-name').value='';document.getElementById('m-amount').value='';document.getElementById('m-planned-date').value='';
   document.getElementById('m-schedule').value='instant';
   document.getElementById('m-custom-plage').style.display='none';
@@ -1020,7 +1103,16 @@ function confirmModal(){
     const sch=document.getElementById('m-schedule').value;tx.schedule=sch;
     if(sch==='custom'){tx.plageS=document.getElementById('m-plage-s').value;tx.plageE=document.getElementById('m-plage-e').value;}
   }
+  if(editingTxId){
+    // Mise à jour
+    Object.keys(data.monthData).forEach(mk2=>{
+      const idx=data.monthData[mk2].transactions.findIndex(t=>String(t.id)===String(editingTxId));
+      if(idx>=0) data.monthData[mk2].transactions.splice(idx,1);
+    });
+    editingTxId=null;
+  }
   md.transactions.push(tx);save();closeModal();
+  renderTxList();
   toast((modalType==='dep'?'− '+fmtAbs(amount):'+ '+fmtAbs(amount))+' · '+name);
 }
 
@@ -1287,6 +1379,7 @@ function exportData(){
   a.href=url;a.download='life-rpg-backup-'+date+'.json';
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
+  localStorage.setItem('life_rpg_last_export', Date.now().toString());
   toast('Sauvegarde exportée');
 }
 
@@ -1312,9 +1405,34 @@ function importData(event){
   event.target.value='';
 }
 
+
+// POPUP SAUVEGARDE TOUS LES 3 JOURS
+function checkSavePopup(){
+  const lastExport=localStorage.getItem('life_rpg_last_export');
+  const lastDismiss=localStorage.getItem('life_rpg_last_dismiss');
+  const now=Date.now();
+  const threeDays=3*24*60*60*1000;
+  // Ne pas afficher si déjà dismissé il y a moins de 3 jours
+  if(lastDismiss&&(now-parseInt(lastDismiss))<threeDays) return;
+  // Afficher si jamais exporté ou export > 3 jours
+  if(!lastExport||(now-parseInt(lastExport))>=threeDays){
+    setTimeout(()=>document.getElementById('save-popup').classList.add('show'), 2000);
+  }
+}
+
+function dismissSavePopup(){
+  localStorage.setItem('life_rpg_last_dismiss', Date.now().toString());
+  document.getElementById('save-popup').classList.remove('show');
+}
+
+function exportFromPopup(){
+  localStorage.setItem('life_rpg_last_export', Date.now().toString());
+  document.getElementById('save-popup').classList.remove('show');
+  exportData();
+}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
-load();update();setInterval(update,1000);
+load();update();setInterval(update,1000);checkSavePopup();
 </script>
 </body>
 </html>
