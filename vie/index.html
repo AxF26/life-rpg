@@ -1808,15 +1808,57 @@ function processImportJson(raw) {
 
 function checkImportUrl() {
   const params = new URLSearchParams(window.location.search);
+  if (!window.location.search) return;
+
+  // Format 1 : paramètres directs ?type=sleep&bedtime=23:15&wakeup=07:00&duration=435
+  const type = params.get('type');
+  if (type) {
+    if (type === 'sleep') {
+      const bedtime  = params.get('bedtime')  || null;
+      const wakeup   = params.get('wakeup')   || null;
+      let dur = Number(params.get('duration')) || 0;
+      if (dur === 0 && bedtime && wakeup) {
+        const bedM = timeToMin(bedtime), wakM = timeToMin(wakeup);
+        dur = bedM > wakM ? (24*60 - bedM) + wakM : wakM - bedM;
+      }
+      state.today.sleep = {
+        bedtime, wakeup, duration_minutes: dur,
+        quality: sleepQualityFromDuration(dur),
+        source: 'apple_watch',
+      };
+      state.today.gaugeAtStart = null;
+      saveKey(KEYS.today, state.today);
+      applyGaugeImpactsForToday();
+      renderAll();
+      showToast(`😴 ${minToHuman(dur)} importé ✓`);
+    } else if (type === 'workout') {
+      const dur       = Number(params.get('duration')) || 30;
+      const avgHr     = Number(params.get('avg_hr'))   || 0;
+      const intensity = avgHr >= 150 ? 'intense' : avgHr >= 120 ? 'moderate' : 'light';
+      const actName   = params.get('activity') || 'Sport';
+      const impacts   = calcImpacts('sport', dur, { intensity });
+      state.today.activities.push({
+        type:'sport', name:actName, start:null, duration:dur,
+        impacts, intensity, source:'apple_watch',
+      });
+      applyImpacts(impacts);
+      saveKey(KEYS.today, state.today);
+      renderAll();
+      showToast(`💪 ${actName} (${minToHuman(dur)}) importé ✓`);
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
+  // Format 2 : base64 encodé ?import=BASE64 (ancien format)
   const raw = params.get('import');
   if (!raw) return;
   try {
     const decoded = decodeBase64Safe(raw);
     processImportJson(decoded);
   } catch (e) {
-    showToast('Erreur décodage Base64 — vérifiez le raccourci');
+    showToast('Erreur décodage Base64');
   }
-  // Clean URL regardless of success
   window.history.replaceState({}, '', window.location.pathname);
 }
 
