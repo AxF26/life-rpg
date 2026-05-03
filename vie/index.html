@@ -1667,7 +1667,13 @@ function decodeBase64Safe(str) {
   return atob(str);
 }
 
+const FR_MONTHS = {
+  'janvier':1,'février':2,'mars':3,'avril':4,'mai':5,'juin':6,
+  'juillet':7,'août':8,'septembre':9,'octobre':10,'novembre':11,'décembre':12
+};
+
 // Parses any iOS date value → "YYYY-MM-DD"
+// Handles: ISO 8601, Unix timestamp, "3 mai 2026 à 16:33" (iOS French)
 function parseIosDate(val) {
   if (!val) return todayStr();
   if (typeof val === 'number') {
@@ -1676,6 +1682,14 @@ function parseIosDate(val) {
   }
   if (typeof val === 'string') {
     if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    // French localized: "3 mai 2026 à 16:33" or "3 mai 2026"
+    const frMatch = val.match(/(\d{1,2})\s+([a-zéûôàù]+)\s+(\d{4})/i);
+    if (frMatch) {
+      const day   = parseInt(frMatch[1]);
+      const month = FR_MONTHS[frMatch[2].toLowerCase()];
+      const year  = parseInt(frMatch[3]);
+      if (month) return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
     try { return new Date(val).toISOString().slice(0, 10); } catch {}
   }
   return todayStr();
@@ -1727,7 +1741,14 @@ function processImportJson(raw) {
   }
 
   if (data.type === 'sleep') {
-    const dur  = Number(data.duration_minutes) || 0;
+    const bed  = parseIosTime(data.bedtime);
+    const wak  = parseIosTime(data.wakeup);
+    // Fallback: calculate duration from bedtime/wakeup if duration_minutes is missing/0
+    let dur = Number(data.duration_minutes) || 0;
+    if (dur === 0 && bed && wak) {
+      const bedM = timeToMin(bed), wakM = timeToMin(wak);
+      dur = bedM > wakM ? (24*60 - bedM) + wakM : wakM - bedM;
+    }
     const date = parseIosDate(data.date);
     const bed  = parseIosTime(data.bedtime);
     const wak  = parseIosTime(data.wakeup);
