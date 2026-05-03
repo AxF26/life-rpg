@@ -1696,19 +1696,26 @@ function parseIosDate(val) {
 }
 
 // Parses any iOS time value → "HH:MM"
+// Handles: "HH:MM", ISO 8601, Unix timestamp, "3 mai 2026 à 23:15" (iOS French)
 function parseIosTime(val) {
   if (!val) return null;
   if (typeof val === 'string') {
-    if (/^\d{2}:\d{2}(:\d{2})?$/.test(val)) return val.slice(0, 5);
-    // ISO 8601 — extract local time from the offset
-    const m = val.match(/T(\d{2}):(\d{2})/);
-    if (m) {
-      // If there's a timezone offset, adjust
+    // Already HH:MM or HH:MM:SS
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(val)) return val.slice(0,5).padStart(5,'0');
+    // French localized date+time: "3 mai 2026 à 23:15"
+    const frTime = val.match(/à\s+(\d{1,2}):(\d{2})/);
+    if (frTime) return `${String(frTime[1]).padStart(2,'0')}:${frTime[2]}`;
+    // ISO 8601 with timezone — use local time
+    if (val.includes('T')) {
       try {
         const d = new Date(val);
-        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      } catch { return `${m[1]}:${m[2]}`; }
+        if (!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      } catch {}
+      // Fallback: extract T part directly (avoids timezone shift)
+      const m = val.match(/T(\d{2}):(\d{2})/);
+      if (m) return `${m[1]}:${m[2]}`;
     }
+    // Any other parseable string
     try {
       const d = new Date(val);
       if (!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
