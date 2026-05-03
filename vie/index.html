@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LIFE.RPG">
+<meta name="theme-color" content="#0d0e1a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LIFE.RPG — Vie</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0e1a;--bg2:#12152a;--bg3:#181c35;--bg4:#1e2340;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --grad:linear-gradient(135deg,#f72585,#7209b7,#4361ee);
+  --grad-green:linear-gradient(135deg,#06d6a0,#4361ee);
+  --grad-red:linear-gradient(135deg,#f72585,#e05252);
+  --green:#06d6a0;--green-dim:rgba(6,214,160,0.12);
+  --red:#f72585;--red-dim:rgba(247,37,133,0.12);
+  --amber:#ffb703;--amber-dim:rgba(255,183,3,0.12);
+  --blue:#4361ee;--blue-dim:rgba(67,97,238,0.15);
+  --purple:#7209b7;--purple-dim:rgba(114,9,183,0.15);
+  --text:#e8eaf6;--text2:#8892b0;--text3:#4a5280;
+  --mono:'JetBrains Mono',monospace;
+  --card-shadow:0 4px 24px rgba(0,0,0,0.4);
+
+  /* Timeline category colors */
+  --cat-sleep:#3d2d6e;
+  --cat-work:#1e3a5f;
+  --cat-sport:#14532d;
+  --cat-meal:#3d2000;
+  --cat-screen:#3d1515;
+  --cat-social:#2d1a3d;
+  --cat-meditation:#0f3d3d;
+  --cat-positive:#1a3d2d;
+  --cat-fixed:#2a2d3a;
+  --cat-free:#1a1c2e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 6rem;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 15% 10%,rgba(114,9,183,0.18) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 85%,rgba(67,97,238,0.15) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 50% 50%,rgba(247,37,133,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.container{width:100%;max-width:640px;position:relative;z-index:1;}
+
+/* HEADER */
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.app-logo{font-size:13px;font-weight:700;letter-spacing:0.2em;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;text-decoration:none;}
+.app-module{font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;}
+.live-clock{font-size:12px;color:var(--text3);font-variant-numeric:tabular-nums;}
+
+/* NAV */
+.nav{display:flex;gap:4px;margin-bottom:1.5rem;background:rgba(18,21,42,0.8);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:4px;}
+.nav-btn{flex:1;padding:8px 0;background:transparent;border:none;border-radius:7px;font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);cursor:pointer;transition:all 0.2s;}
+.nav-btn.active{background:linear-gradient(135deg,rgba(114,9,183,0.3),rgba(67,97,238,0.3));color:var(--green);border:1px solid rgba(6,214,160,0.3);}
+.nav-btn:hover:not(.active){color:var(--text2);}
+.screen{display:none;}.screen.active{display:block;}
+
+/* SECTION LABEL */
+.section-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:0.75rem;}
+
+/* CARD */
+.card{background:linear-gradient(135deg,rgba(18,21,42,0.9),rgba(24,28,53,0.9));backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:1.25rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:var(--card-shadow);}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(6,214,160,0.4),rgba(67,97,238,0.3),transparent);}
+
+/* JAUGES */
+.gauges-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;}
+.gauge-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:0.9rem;}
+.gauge-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;}
+.gauge-name{font-size:10px;color:var(--text2);letter-spacing:0.06em;}
+.gauge-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+.gauge-bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;position:relative;}
+.gauge-bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease;}
+.gauge-bar-ceiling{position:absolute;top:0;width:2px;height:100%;background:rgba(255,255,255,0.3);border-radius:1px;}
+.gauge-delta{font-size:9px;margin-top:4px;color:var(--text3);}
+
+/* TEMPS LIBRE */
+.free-time-block{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;}
+.ft-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;}
+.ft-value{font-size:28px;font-weight:300;background:var(--grad-green);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-variant-numeric:tabular-nums;}
+.ft-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+.ft-bar-wrap{flex:1;margin:0 1rem;}
+.ft-bar-track{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.ft-bar-fill{height:100%;background:var(--grad-green);border-radius:4px;transition:width 0.5s;}
+
+/* TIMELINE */
+.timeline-wrap{margin-bottom:0.5rem;}
+.timeline-bar{height:36px;background:var(--bg4);border-radius:8px;overflow:hidden;position:relative;display:flex;}
+.timeline-segment{height:100%;flex-shrink:0;transition:width 0.3s;}
+.timeline-now{position:absolute;top:0;width:2px;height:100%;background:#fff;opacity:0.7;border-radius:1px;z-index:2;}
+.timeline-hours{display:flex;justify-content:space-between;margin-top:4px;padding:0 2px;}
+.timeline-hour{font-size:9px;color:var(--text3);}
+.timeline-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+.tl-leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);}
+.tl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* ACTIVITIES LIST */
+.activity-list{display:flex;flex-direction:column;gap:8px;}
+.activity-row{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;}
+.activity-row:hover{border-color:var(--border2);}
+.act-icon{font-size:18px;flex-shrink:0;}
+.act-info{flex:1;min-width:0;}
+.act-name{font-size:12px;color:var(--text);}
+.act-meta{font-size:10px;color:var(--text3);margin-top:2px;}
+.act-impacts{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.act-impact-tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:500;}
+.act-impact-pos{background:rgba(6,214,160,0.15);color:var(--green);}
+.act-impact-neg{background:rgba(247,37,133,0.15);color:var(--red);}
+.act-time{font-size:10px;color:var(--text3);flex-shrink:0;}
+
+/* LOG BUTTON */
+.log-btn{width:100%;padding:14px;background:linear-gradient(135deg,rgba(114,9,183,0.25),rgba(67,97,238,0.25));border:1px solid rgba(6,214,160,0.3);border-radius:12px;color:var(--green);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;margin-bottom:1rem;}
+.log-btn:hover{background:linear-gradient(135deg,rgba(114,9,183,0.4),rgba(67,97,238,0.4));border-color:var(--green);}
+
+/* QUICK LOG BUTTONS */
+.quick-log{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.ql-btn{padding:10px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all 0.15s;font-family:var(--mono);}
+.ql-btn:hover{border-color:var(--border2);background:var(--bg3);}
+.ql-icon{font-size:18px;display:block;margin-bottom:4px;}
+.ql-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;}
+
+/* SKILLS */
+.skill-list{display:flex;flex-direction:column;gap:10px;}
+.skill-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;transition:border-color 0.15s;}
+.skill-item:hover{border-color:var(--border2);}
+.skill-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;}
+.skill-name{font-size:13px;font-weight:500;}
+.skill-level{font-size:10px;color:var(--purple);background:rgba(114,9,183,0.15);border:1px solid rgba(114,9,183,0.3);border-radius:6px;padding:2px 8px;}
+.skill-meta{display:flex;gap:1rem;margin-bottom:0.6rem;}
+.skill-stat{font-size:10px;color:var(--text3);}
+.skill-stat span{color:var(--text2);}
+.skill-xp-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.skill-xp-fill{height:100%;background:var(--grad);border-radius:2px;transition:width 0.5s;}
+.add-skill-btn{width:100%;padding:12px;background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:12px;color:var(--text3);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;margin-top:8px;}
+.add-skill-btn:hover{border-color:var(--border2);color:var(--text2);}
+
+/* HISTORY */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.cal-nav{background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;}
+.cal-nav:hover{border-color:var(--border2);}
+.cal-month{font-size:13px;font-weight:500;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem;}
+.cal-dow{font-size:9px;color:var(--text3);text-align:center;padding:4px 0;letter-spacing:0.05em;}
+.cal-day{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
+.cal-day.empty{background:transparent;cursor:default;}
+.cal-day.today{border-color:rgba(6,214,160,0.5);}
+.cal-day.score-high{background:rgba(6,214,160,0.2);color:var(--green);}
+.cal-day.score-mid{background:rgba(255,183,3,0.15);color:var(--amber);}
+.cal-day.score-low{background:rgba(247,37,133,0.12);color:var(--red);}
+.cal-day.no-data{background:var(--bg2);color:var(--text3);}
+.cal-day.future{background:transparent;color:var(--text3);opacity:0.3;cursor:default;}
+.history-detail{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;}
+.hd-title{font-size:11px;color:var(--text3);margin-bottom:0.75rem;}
+.hd-gauges{display:flex;gap:8px;flex-wrap:wrap;}
+.hd-gauge{font-size:11px;display:flex;align-items:center;gap:4px;}
+
+/* CONFIG */
+.config-section{margin-bottom:1.5rem;}
+.config-section-title{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);}
+.config-row:last-child{border-bottom:none;}
+.config-label{font-size:12px;color:var(--text2);}
+.config-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+.config-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:12px;color:var(--text);width:90px;text-align:center;}
+.config-input:focus{outline:none;border-color:rgba(6,214,160,0.4);}
+.config-btn{padding:10px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.config-btn:hover{border-color:var(--border2);color:var(--text);}
+.config-btn.danger{border-color:rgba(247,37,133,0.3);color:var(--red);}
+.config-btn.danger:hover{background:var(--red-dim);}
+.config-btn.primary{border-color:rgba(6,214,160,0.3);color:var(--green);}
+.config-btn.primary:hover{background:var(--green-dim);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay.show{display:flex;}
+.modal{background:rgba(18,21,42,0.98);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));width:100%;max-width:640px;box-shadow:0 -8px 32px rgba(0,0,0,0.6);max-height:92vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 1.25rem;}
+.modal-title{font-size:14px;font-weight:500;margin-bottom:1.25rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.modal-row{margin-bottom:1rem;}
+.modal-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:0.5rem;display:block;}
+.modal-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;color:var(--text);}
+.modal-input:focus{outline:none;border-color:rgba(6,214,160,0.4);}
+.modal-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;color:var(--text);appearance:none;}
+.modal-select:focus{outline:none;border-color:rgba(6,214,160,0.4);}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.type-btn{padding:10px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;font-family:var(--mono);transition:all 0.15s;}
+.type-btn.selected{border-color:rgba(6,214,160,0.5);background:rgba(6,214,160,0.1);}
+.type-btn .tb-icon{font-size:20px;display:block;margin-bottom:4px;}
+.type-btn .tb-label{font-size:9px;color:var(--text3);text-transform:uppercase;}
+.type-btn.selected .tb-label{color:var(--green);}
+.modal-actions{display:flex;gap:8px;margin-top:1.25rem;}
+.modal-btn{flex:1;padding:12px;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;letter-spacing:0.05em;}
+.modal-btn.cancel{background:var(--bg3);color:var(--text3);}
+.modal-btn.confirm{background:linear-gradient(135deg,rgba(114,9,183,0.4),rgba(67,97,238,0.4));color:var(--green);border:1px solid rgba(6,214,160,0.3);}
+.modal-btn.confirm:hover{background:linear-gradient(135deg,rgba(114,9,183,0.6),rgba(67,97,238,0.6));}
+.impact-preview{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.75rem;margin-top:0.5rem;}
+.impact-preview-title{font-size:10px;color:var(--text3);margin-bottom:0.5rem;letter-spacing:0.08em;text-transform:uppercase;}
+.impact-lines{display:flex;flex-wrap:wrap;gap:6px;}
+.impact-line{font-size:10px;padding:3px 8px;border-radius:5px;}
+.impact-pos{background:rgba(6,214,160,0.15);color:var(--green);}
+.impact-neg{background:rgba(247,37,133,0.15);color:var(--red);}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(5rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:rgba(18,21,42,0.95);border:1px solid rgba(6,214,160,0.4);border-radius:10px;padding:10px 20px;font-size:12px;color:var(--green);z-index:300;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* SLEEP BANNER */
+.sleep-banner{background:linear-gradient(135deg,rgba(61,45,110,0.4),rgba(24,28,53,0.6));border:1px solid rgba(114,9,183,0.3);border-radius:12px;padding:0.9rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.sb-info{flex:1;}
+.sb-title{font-size:11px;color:var(--text2);}
+.sb-detail{font-size:10px;color:var(--text3);margin-top:2px;}
+.sb-btn{font-size:10px;color:var(--purple);background:rgba(114,9,183,0.15);border:1px solid rgba(114,9,183,0.3);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:var(--mono);}
+
+/* RANGE INPUT */
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bg4);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--green);border-radius:50%;cursor:pointer;}
+
+/* STARS */
+.stars{display:flex;gap:6px;}
+.star{font-size:20px;cursor:pointer;opacity:0.3;transition:opacity 0.15s;}
+.star.on{opacity:1;}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;gap:8px;}
+.toggle{width:42px;height:24px;background:var(--bg4);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;border:none;}
+.toggle.on{background:rgba(6,214,160,0.4);border:1px solid rgba(6,214,160,0.5);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--text3);border-radius:50%;transition:all 0.2s;}
+.toggle.on .toggle-thumb{left:21px;background:var(--green);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:2rem;color:var(--text3);font-size:12px;}
+.empty-icon{font-size:32px;margin-bottom:0.75rem;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* SAFE AREA */
+@supports(padding-bottom:env(safe-area-inset-bottom)){
+  body{padding-bottom:calc(6rem + env(safe-area-inset-bottom));}
+}
+
+/* SKILL DETAIL row for log */
+.skill-log-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;}
+.skill-log-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.75rem;cursor:pointer;transition:border-color 0.15s;}
+.skill-log-item:hover,.skill-log-item.selected{border-color:rgba(114,9,183,0.5);background:var(--purple-dim);}
+.sli-name{font-size:12px;}
+.sli-level{font-size:9px;color:var(--text3);}
+
+/* Intensity selector */
+.intensity-btns{display:flex;gap:8px;}
+.int-btn{flex:1;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--text3);cursor:pointer;text-align:center;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.05em;}
+.int-btn.selected{border-color:rgba(6,214,160,0.5);color:var(--green);background:rgba(6,214,160,0.08);}
+
+/* Day score badge */
+.day-score-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:8px;}
+.dsb-high{background:rgba(6,214,160,0.12);color:var(--green);}
+.dsb-mid{background:rgba(255,183,3,0.12);color:var(--amber);}
+.dsb-low{background:rgba(247,37,133,0.12);color:var(--red);}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="app-header">
+    <div>
+      <a class="app-logo" href="../">LIFE<span style="font-weight:300">.</span>RPG</a>
+      <div class="app-module">Vie</div>
+    </div>
+    <div class="live-clock" id="clock">--:--:--</div>
+  </header>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showScreen('today',this)">Aujourd'hui</button>
+    <button class="nav-btn" onclick="showScreen('skills',this)">Compétences</button>
+    <button class="nav-btn" onclick="showScreen('history',this)">Historique</button>
+    <button class="nav-btn" onclick="showScreen('config',this)">Config</button>
+  </nav>
+
+  <!-- ===== AUJOURD'HUI ===== -->
+  <div id="screen-today" class="screen active">
+    <div id="sleep-banner" class="sleep-banner" style="display:none">
+      <div class="sb-info">
+        <div class="sb-title" id="sleep-banner-title">😴 Sommeil non enregistré</div>
+        <div class="sb-detail" id="sleep-banner-detail">Enregistre ton sommeil pour calibrer les jauges</div>
+      </div>
+      <button class="sb-btn" onclick="openModal('modal-sleep')">+ Sommeil</button>
+    </div>
+
+    <div class="section-label">Jauges du jour</div>
+    <div class="gauges-grid" id="gauges-grid">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="free-time-block">
+      <div>
+        <div class="ft-label">Temps libre</div>
+        <div class="ft-value" id="free-time-val">--h--</div>
+        <div class="ft-sub" id="free-time-sub">sur <span id="free-time-total">--</span>h disponibles</div>
+      </div>
+      <div class="ft-bar-wrap">
+        <div class="ft-bar-track">
+          <div class="ft-bar-fill" id="free-time-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Timeline 24h</div>
+    <div class="card timeline-wrap">
+      <div class="timeline-bar" id="timeline-bar"></div>
+      <div class="timeline-hours">
+        <span class="timeline-hour">0h</span>
+        <span class="timeline-hour">6h</span>
+        <span class="timeline-hour">12h</span>
+        <span class="timeline-hour">18h</span>
+        <span class="timeline-hour">24h</span>
+      </div>
+      <div class="timeline-legend" id="timeline-legend"></div>
+    </div>
+
+    <div class="section-label">Actions rapides</div>
+    <div class="quick-log">
+      <button class="ql-btn" onclick="quickLog('sleep')">
+        <span class="ql-icon">😴</span><span class="ql-label">Sommeil</span>
+      </button>
+      <button class="ql-btn" onclick="quickLog('sport')">
+        <span class="ql-icon">💪</span><span class="ql-label">Sport</span>
+      </button>
+      <button class="ql-btn" onclick="quickLog('meal')">
+        <span class="ql-icon">🍽</span><span class="ql-label">Repas</span>
+      </button>
+      <button class="ql-btn" onclick="quickLog('screen')">
+        <span class="ql-icon">🎮</span><span class="ql-label">Écrans</span>
+      </button>
+      <button class="ql-btn" onclick="quickLog('social')">
+        <span class="ql-icon">👥</span><span class="ql-label">Social</span>
+      </button>
+      <button class="ql-btn" onclick="quickLog('skill')">
+        <span class="ql-icon">📚</span><span class="ql-label">Compétence</span>
+      </button>
+    </div>
+
+    <button class="log-btn" onclick="openModal('modal-log')">+ Logger une activité</button>
+
+    <div class="section-label">Activités du jour</div>
+    <div id="today-activities">
+      <div class="empty-state">
+        <div class="empty-icon">✨</div>
+        <div>Aucune activité loggée</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPÉTENCES ===== -->
+  <div id="screen-skills" class="screen">
+    <div class="section-label">Mes compétences</div>
+    <div class="skill-list" id="skill-list">
+      <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <div>Aucune compétence créée</div>
+        <div style="font-size:10px;margin-top:8px;color:var(--text3)">Ajoute tes objectifs ci-dessous</div>
+      </div>
+    </div>
+    <button class="add-skill-btn" onclick="openModal('modal-add-skill')">+ Ajouter une compétence</button>
+  </div>
+
+  <!-- ===== HISTORIQUE ===== -->
+  <div id="screen-history" class="screen">
+    <div class="card">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="calPrev()">‹</button>
+        <span class="cal-month" id="cal-month-label"></span>
+        <button class="cal-nav" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="history-detail card" id="history-detail" style="display:none">
+      <div class="hd-title" id="hd-date"></div>
+      <div id="hd-content"></div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIG ===== -->
+  <div id="screen-config" class="screen">
+    <div class="config-section">
+      <div class="config-section-title">Travail</div>
+      <div class="config-row">
+        <div><div class="config-label">Début matin</div></div>
+        <input type="time" class="config-input" id="cfg-work-start" value="08:30">
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Fin matin</div></div>
+        <input type="time" class="config-input" id="cfg-work-midend" value="12:30">
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Début après-midi</div></div>
+        <input type="time" class="config-input" id="cfg-work-midstart" value="14:00">
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Fin après-midi</div></div>
+        <input type="time" class="config-input" id="cfg-work-end" value="18:00">
+      </div>
+      <div class="config-row">
+        <div>
+          <div class="config-label">Travailler le week-end</div>
+          <div class="config-sub">Inclure sam/dim dans les blocs travail</div>
+        </div>
+        <button class="toggle" id="toggle-weekend" onclick="toggleCfg('weekend')"></button>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-section-title">Seuil écrans (soirée)</div>
+      <div class="config-row">
+        <div><div class="config-label">Semaine (lun-jeu)</div></div>
+        <input type="time" class="config-input" id="cfg-screen-week" value="20:00">
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Week-end (ven-dim)</div></div>
+        <input type="time" class="config-input" id="cfg-screen-weekend" value="21:00">
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-section-title">Import Apple Watch</div>
+      <div class="config-row">
+        <div>
+          <div class="config-label">Importer depuis presse-papier</div>
+          <div class="config-sub">Copiez les données depuis Raccourcis iOS</div>
+        </div>
+        <button class="config-btn primary" onclick="importClipboard()">Importer</button>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-section-title">Données</div>
+      <div class="config-row">
+        <div><div class="config-label">Exporter JSON</div><div class="config-sub">Sauvegarde complète</div></div>
+        <button class="config-btn primary" onclick="exportData()">Export</button>
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Importer JSON</div><div class="config-sub">Restaurer une sauvegarde</div></div>
+        <button class="config-btn" onclick="document.getElementById('import-file').click()">Import</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="config-row">
+        <div><div class="config-label">Réinitialiser</div><div class="config-sub">Effacer toutes les données</div></div>
+        <button class="config-btn danger" onclick="resetData()">Reset</button>
+      </div>
+    </div>
+
+    <div style="padding:0.5rem 0;text-align:center">
+      <button onclick="saveConfig()" class="log-btn" style="margin-bottom:0">Sauvegarder la configuration</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ===== MODAL LOG ACTIVITÉ ===== -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Logger une activité</div>
+
+    <div class="modal-row">
+      <label class="modal-label">Type</label>
+      <div class="type-grid" id="log-type-grid">
+        <button class="type-btn" data-type="sleep" onclick="selectLogType('sleep')"><span class="tb-icon">😴</span><span class="tb-label">Sommeil</span></button>
+        <button class="type-btn" data-type="sport" onclick="selectLogType('sport')"><span class="tb-icon">💪</span><span class="tb-label">Sport</span></button>
+        <button class="type-btn" data-type="meal" onclick="selectLogType('meal')"><span class="tb-icon">🍽</span><span class="tb-label">Repas</span></button>
+        <button class="type-btn" data-type="screen" onclick="selectLogType('screen')"><span class="tb-icon">🎮</span><span class="tb-label">Écrans</span></button>
+        <button class="type-btn" data-type="social" onclick="selectLogType('social')"><span class="tb-icon">👥</span><span class="tb-label">Social</span></button>
+        <button class="type-btn" data-type="meditation" onclick="selectLogType('meditation')"><span class="tb-icon">🧘</span><span class="tb-label">Méditation</span></button>
+        <button class="type-btn" data-type="positive" onclick="selectLogType('positive')"><span class="tb-icon">📚</span><span class="tb-label">Apprentissage</span></button>
+        <button class="type-btn" data-type="fixed" onclick="selectLogType('fixed')"><span class="tb-icon">🚗</span><span class="tb-label">Trajet/Fixe</span></button>
+        <button class="type-btn" data-type="skill" onclick="selectLogType('skill')"><span class="tb-icon">🎯</span><span class="tb-label">Compétence</span></button>
+      </div>
+    </div>
+
+    <div id="log-name-row" class="modal-row">
+      <label class="modal-label">Nom (optionnel)</label>
+      <input type="text" class="modal-input" id="log-name" placeholder="ex: Muscu, Netflix, Guitare...">
+    </div>
+
+    <div id="log-skill-row" class="modal-row" style="display:none">
+      <label class="modal-label">Compétence associée</label>
+      <div class="skill-log-list" id="skill-log-list"></div>
+    </div>
+
+    <div class="modal-row">
+      <label class="modal-label">Heure de début</label>
+      <input type="time" class="modal-input" id="log-start">
+    </div>
+
+    <div id="log-duration-row" class="modal-row">
+      <label class="modal-label">Durée (minutes) — <span id="log-duration-display">60 min</span></label>
+      <input type="range" id="log-duration" min="5" max="480" step="5" value="60" oninput="updateDurationDisplay()">
+    </div>
+
+    <div id="log-sleep-rows" style="display:none">
+      <div class="modal-row">
+        <label class="modal-label">Heure de réveil</label>
+        <input type="time" class="modal-input" id="log-wakeup">
+      </div>
+      <div class="modal-row">
+        <label class="modal-label">Qualité perçue</label>
+        <div class="stars" id="sleep-stars">
+          <span class="star" onclick="setSleepQuality(1)">★</span>
+          <span class="star" onclick="setSleepQuality(2)">★</span>
+          <span class="star" onclick="setSleepQuality(3)">★</span>
+          <span class="star on" onclick="setSleepQuality(4)">★</span>
+          <span class="star" onclick="setSleepQuality(5)">★</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="log-intensity-row" class="modal-row" style="display:none">
+      <label class="modal-label">Intensité</label>
+      <div class="intensity-btns">
+        <button class="int-btn selected" onclick="selectIntensity('light',this)">Légère</button>
+        <button class="int-btn" onclick="selectIntensity('moderate',this)">Modérée</button>
+        <button class="int-btn" onclick="selectIntensity('intense',this)">Intense</button>
+      </div>
+    </div>
+
+    <div id="log-meal-row" class="modal-row" style="display:none">
+      <label class="modal-label">Qualité du repas</label>
+      <div class="intensity-btns">
+        <button class="int-btn selected" onclick="selectMealQuality('good',this)">Bonne</button>
+        <button class="int-btn" onclick="selectMealQuality('bad',this)">Fast-food</button>
+      </div>
+    </div>
+
+    <div id="log-recovery-row" class="modal-row" style="display:none">
+      <div class="toggle-row">
+        <button class="toggle" id="toggle-recovery" onclick="toggleRecovery()"></button>
+        <span style="font-size:12px;color:var(--text2)">Jour de récupération</span>
+      </div>
+    </div>
+
+    <div id="impact-preview" class="impact-preview">
+      <div class="impact-preview-title">Impact estimé</div>
+      <div class="impact-lines" id="impact-lines">
+        <span style="font-size:10px;color:var(--text3)">Sélectionne un type d'activité</span>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('modal-log')">Annuler</button>
+      <button class="modal-btn confirm" onclick="logActivity()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ADD SKILL ===== -->
+<div class="modal-overlay" id="modal-add-skill">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nouvelle compétence</div>
+    <div class="modal-row">
+      <label class="modal-label">Nom</label>
+      <input type="text" class="modal-input" id="new-skill-name" placeholder="ex: Guitare, Méditation, Espagnol...">
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">Icône</label>
+      <input type="text" class="modal-input" id="new-skill-icon" placeholder="🎸" maxlength="2" style="font-size:24px;text-align:center;">
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">Catégorie</label>
+      <select class="modal-select" id="new-skill-category">
+        <option value="corps">💪 Corps</option>
+        <option value="esprit">🧠 Esprit</option>
+        <option value="competences">🎯 Compétences</option>
+        <option value="social">👥 Social</option>
+        <option value="autre">⭐ Autre</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('modal-add-skill')">Annuler</button>
+      <button class="modal-btn confirm" onclick="addSkill()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SLEEP (quick) ===== -->
+<div class="modal-overlay" id="modal-sleep">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">😴 Enregistrer le sommeil</div>
+    <div class="modal-row">
+      <label class="modal-label">Heure de coucher</label>
+      <input type="time" class="modal-input" id="sleep-bedtime" value="23:00">
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">Heure de réveil</label>
+      <input type="time" class="modal-input" id="sleep-wakeup" value="07:00">
+    </div>
+    <div class="modal-row">
+      <label class="modal-label">Qualité perçue</label>
+      <div class="stars" id="sleep-stars-quick">
+        <span class="star" onclick="setSleepQualityQuick(1)">★</span>
+        <span class="star" onclick="setSleepQualityQuick(2)">★</span>
+        <span class="star" onclick="setSleepQualityQuick(3)">★</span>
+        <span class="star on" onclick="setSleepQualityQuick(4)">★</span>
+        <span class="star" onclick="setSleepQualityQuick(5)">★</span>
+      </div>
+    </div>
+    <div class="modal-row" style="font-size:11px;color:var(--text3)">
+      Tu peux aussi importer depuis Apple Watch via Raccourcis iOS (paramètre URL <code style="color:var(--text2)">?import=</code>)
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal('modal-sleep')">Annuler</button>
+      <button class="modal-btn confirm" onclick="logSleepQuick()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONSTANTS & STATE
+// ============================================================
+const KEYS = {
+  config:  'life_rpg_vie_config',
+  today:   'life_rpg_vie_today',
+  history: 'life_rpg_vie_history',
+  skills:  'life_rpg_vie_skills',
+  gauges:  'life_rpg_vie_gauges',
+};
+
+const GAUGE_DEFS = [
+  { id:'energy',   label:'⚡ Énergie',       color:'#ffb703' },
+  { id:'focus',    label:'🧠 Concentration', color:'#4361ee' },
+  { id:'wellbeing',label:'😊 Bien-être',     color:'#06d6a0' },
+  { id:'sleep',    label:'🌙 Sommeil',       color:'#7209b7' },
+  { id:'fitness',  label:'💪 Forme',         color:'#f72585' },
+];
+
+const CAT_COLORS = {
+  sleep:     'var(--cat-sleep)',
+  work:      'var(--cat-work)',
+  sport:     'var(--cat-sport)',
+  meal:      'var(--cat-meal)',
+  screen:    'var(--cat-screen)',
+  social:    'var(--cat-social)',
+  meditation:'var(--cat-meditation)',
+  positive:  'var(--cat-positive)',
+  skill:     'var(--cat-positive)',
+  fixed:     'var(--cat-fixed)',
+  free:      'var(--cat-free)',
+};
+
+const CAT_LABELS = {
+  sleep:'😴 Sommeil', work:'💼 Travail', sport:'💪 Sport',
+  meal:'🍽 Repas', screen:'🎮 Écrans', social:'👥 Social',
+  meditation:'🧘 Méditation', positive:'📚 Apprentissage',
+  skill:'🎯 Compétence', fixed:'🚗 Trajet/Fixe', free:'⬜ Libre',
+};
+
+const SKILL_LEVELS = ['Débutant','Novice','Intermédiaire','Avancé','Expert','Maître'];
+const XP_PER_LEVEL = [0, 300, 900, 2100, 4500, 9300];
+
+let state = {
+  config: null,
+  today: null,
+  history: [],
+  skills: [],
+  gauges: null,
+};
+
+let logType = null;
+let logIntensity = 'light';
+let logMealQuality = 'good';
+let logSleepQuality = 4;
+let logSleepQualityQuick = 4;
+let logRecovery = false;
+let selectedSkillId = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  loadState();
+  checkImportUrl();
+  renderAll();
+  setInterval(tickClock, 1000);
+  setInterval(renderTimeline, 60000);
+  checkExportReminder();
+}
+
+function loadState() {
+  state.config  = loadKey(KEYS.config)  || defaultConfig();
+  state.today   = loadKey(KEYS.today)   || defaultToday();
+  state.history = loadKey(KEYS.history) || [];
+  state.skills  = loadKey(KEYS.skills)  || [];
+  state.gauges  = loadKey(KEYS.gauges)  || defaultGauges();
+
+  // Rotate day if needed
+  const today = todayStr();
+  if (state.today.date !== today) {
+    archiveDay();
+    state.today = defaultToday();
+    saveKey(KEYS.today, state.today);
+  }
+
+  applyGaugeImpactsForToday();
+}
+
+function renderAll() {
+  renderGauges();
+  renderFreeTime();
+  renderTimeline();
+  renderTodayActivities();
+  renderSleepBanner();
+  renderSkills();
+  renderCalendar();
+  applyConfig();
+}
+
+// ============================================================
+// DEFAULTS
+// ============================================================
+function defaultConfig() {
+  return {
+    workStart:'08:30', workMidEnd:'12:30',
+    workMidStart:'14:00', workEnd:'18:00',
+    weekend: false,
+    screenWeek:'20:00', screenWeekend:'21:00',
+    lastExport: null,
+  };
+}
+
+function defaultToday() {
+  const today = todayStr();
+  const dow = new Date().getDay(); // 0=sun
+  const isWeekday = dow >= 1 && dow <= 5;
+  const isWorkDay = isWeekday || state.config?.weekend;
+  const blocks = [];
+
+  if (isWorkDay) {
+    const c = state.config || defaultConfig();
+    blocks.push({ type:'work', start: timeToMin(c.workStart),   end: timeToMin(c.workMidEnd) });
+    blocks.push({ type:'work', start: timeToMin(c.workMidStart), end: timeToMin(c.workEnd)   });
+  }
+
+  return {
+    date: today,
+    sleep: null,
+    activities: [],
+    blocks: blocks,
+    gaugeAtStart: null,
+  };
+}
+
+function defaultGauges() {
+  const base = {};
+  GAUGE_DEFS.forEach(g => base[g.id] = 75);
+  return { values: base, ceiling: 0.85, history7: [] };
+}
+
+// ============================================================
+// DATE HELPERS
+// ============================================================
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function timeToMin(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minToTime(m) {
+  const h = Math.floor(m/60) % 24;
+  const mn = m % 60;
+  return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+}
+
+function minToHuman(m) {
+  const h = Math.floor(m / 60);
+  const mn = m % 60;
+  if (h === 0) return `${mn}min`;
+  if (mn === 0) return `${h}h`;
+  return `${h}h${String(mn).padStart(2,'0')}`;
+}
+
+function nowMin() {
+  const n = new Date();
+  return n.getHours()*60 + n.getMinutes();
+}
+
+// ============================================================
+// LOCALSTORAGE
+// ============================================================
+function loadKey(k) {
+  try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }
+}
+function saveKey(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+}
+function saveAll() {
+  saveKey(KEYS.config, state.config);
+  saveKey(KEYS.today, state.today);
+  saveKey(KEYS.history, state.history);
+  saveKey(KEYS.skills, state.skills);
+  saveKey(KEYS.gauges, state.gauges);
+}
+
+// ============================================================
+// CLOCK
+// ============================================================
+function tickClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}
+
+// ============================================================
+// GAUGE ENGINE
+// ============================================================
+function computeCeiling(h7) {
+  if (!h7 || h7.length === 0) return 0.80;
+  const goodDays = h7.filter(d => d.sleep && d.sleep.duration_minutes >= 420).length;
+  if (goodDays >= 7) return 1.00;
+  if (goodDays >= 5) return 0.875;
+  if (goodDays >= 3) return 0.70;
+  return 0.55;
+}
+
+function sleepBonus(sleepData) {
+  if (!sleepData) return 0;
+  const hrs = (sleepData.duration_minutes || 0) / 60;
+  const qualMult = (sleepData.quality || 3) / 5;
+  if (hrs >= 8) return 0.10 * qualMult;
+  if (hrs >= 7) return 0;
+  if (hrs >= 6) return -0.10;
+  return -0.20;
+}
+
+function applySleep(gv, sleepData) {
+  const hrs = (sleepData.duration_minutes || 0) / 60;
+  const q = (sleepData.quality || 3) / 5;
+  let sleepScore, regenMult;
+  if (hrs >= 8)      { sleepScore = Math.round(85 + 15*q); regenMult = 1.0; }
+  else if (hrs >= 7) { sleepScore = Math.round(70 + 15*q); regenMult = 0.85; }
+  else if (hrs >= 6) { sleepScore = Math.round(50 + 15*q); regenMult = 0.65; }
+  else               { sleepScore = Math.round(20 + 30*q); regenMult = 0.40; }
+
+  const ceil = state.gauges.ceiling * 100;
+  gv.sleep    = Math.min(sleepScore, ceil);
+  gv.energy   = Math.min(Math.round(60 * regenMult), ceil);
+  gv.focus    = Math.min(Math.round(55 * regenMult), ceil);
+  gv.wellbeing= Math.min(Math.round(60 * regenMult), ceil);
+  gv.fitness  = Math.min(state.gauges.values.fitness, ceil);
+  return gv;
+}
+
+function calcImpacts(type, durMin, opts) {
+  const impacts = {};
+  const { intensity = 'light', mealQuality = 'good', recovery = false } = opts || {};
+
+  if (type === 'sport') {
+    const eDelta = intensity==='light'?-5:(intensity==='moderate'?-12:-20);
+    impacts.energy   = eDelta;
+    impacts.focus    = -10;
+    impacts.wellbeing= intensity==='light'?15:(intensity==='moderate'?20:25);
+    impacts.fitness  = recovery ? 5 : (intensity==='light'?5:(intensity==='moderate'?12:20));
+  }
+  else if (type === 'screen') {
+    const now = new Date();
+    const dow = now.getDay();
+    const isWeekend = dow === 0 || dow >= 5;
+    const thresholdStr = isWeekend ? (state.config?.screenWeekend||'21:00') : (state.config?.screenWeek||'20:00');
+    const threshMin = timeToMin(thresholdStr);
+    const startMin  = timeToMin(document.getElementById('log-start')?.value || minToTime(nowMin()));
+    const isAfter   = startMin >= threshMin;
+
+    if (isAfter) {
+      if (durMin < 60)        { impacts.sleep = -10; }
+      else if (durMin < 120)  { impacts.sleep = -25; impacts.energy = -15; }
+      else                    { impacts.sleep = -40; impacts.focus = -20; impacts.wellbeing = -15; }
+    } else {
+      if (durMin >= 60 && durMin < 120)  { impacts.energy = -10; impacts.focus = -10; }
+      else if (durMin >= 120 && durMin < 240) { impacts.energy = -20; impacts.focus = -25; }
+      else if (durMin >= 240) { impacts.energy = -35; impacts.focus = -35; impacts.wellbeing = -20; }
+    }
+  }
+  else if (type === 'meditation') {
+    impacts.focus    = 15;
+    impacts.wellbeing= 15;
+    impacts.energy   = 5;
+  }
+  else if (type === 'positive' || type === 'skill') {
+    impacts.focus    = durMin <= 30 ? 5 : 10;
+    impacts.wellbeing= 10;
+  }
+  else if (type === 'social') {
+    impacts.wellbeing= 20 + Math.min(Math.floor(durMin/60)*5, 10);
+    impacts.energy   = -Math.max(5, Math.floor(durMin/60)*5);
+  }
+  else if (type === 'meal') {
+    if (mealQuality === 'good') { impacts.energy = 15; impacts.wellbeing = 10; }
+    else                        { impacts.energy = 5;  impacts.wellbeing = -5; }
+  }
+
+  return impacts;
+}
+
+function applyImpacts(impacts) {
+  const gv = state.gauges.values;
+  const ceil = state.gauges.ceiling * 100;
+  for (const [k, delta] of Object.entries(impacts)) {
+    if (gv[k] !== undefined) {
+      gv[k] = Math.max(0, Math.min(ceil, gv[k] + delta));
+    }
+  }
+  saveKey(KEYS.gauges, state.gauges);
+}
+
+function applyGaugeImpactsForToday() {
+  // Recompute ceiling from 7-day history
+  const h7 = state.history.slice(-7);
+  state.gauges.history7 = h7;
+  const rawCeil = computeCeiling(h7);
+  const bonus   = sleepBonus(state.today.sleep);
+  state.gauges.ceiling = Math.min(1, Math.max(0.4, rawCeil + bonus));
+
+  // If we have sleep for today, recalc wakeup gauges
+  if (state.today.sleep && !state.today.gaugeAtStart) {
+    const gv = { ...state.gauges.values };
+    state.gauges.values = applySleep(gv, state.today.sleep);
+    state.today.gaugeAtStart = { ...state.gauges.values };
+    saveKey(KEYS.today, state.today);
+    saveKey(KEYS.gauges, state.gauges);
+  }
+}
+
+// ============================================================
+// RENDER GAUGES
+// ============================================================
+function renderGauges() {
+  const grid = document.getElementById('gauges-grid');
+  const gv   = state.gauges.values;
+  const ceil = Math.round(state.gauges.ceiling * 100);
+  grid.innerHTML = GAUGE_DEFS.map(g => {
+    const val = Math.round(gv[g.id] || 0);
+    const pct = val;
+    const cPct = ceil;
+    const color = g.color;
+    const cls = val >= 70 ? 'var(--green)' : val >= 40 ? 'var(--amber)' : 'var(--red)';
+    return `<div class="gauge-item">
+      <div class="gauge-header">
+        <span class="gauge-name">${g.label}</span>
+        <span class="gauge-val" style="color:${cls}">${val}%</span>
+      </div>
+      <div class="gauge-bar-track">
+        <div class="gauge-bar-fill" style="width:${pct}%;background:${color}44;border:none;box-shadow:none;background:linear-gradient(90deg,${color}88,${color});" ></div>
+        <div class="gauge-bar-ceiling" style="left:${cPct}%"></div>
+      </div>
+      <div class="gauge-delta" style="color:var(--text3)">Plafond: ${ceil}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// FREE TIME
+// ============================================================
+function computeFreeTime() {
+  const totalMin = 24 * 60;
+  let used = 0;
+  for (const b of state.today.blocks) {
+    used += (b.end - b.start);
+  }
+  const freeMin = Math.max(0, totalMin - used);
+  const freeH = freeMin / 60;
+  const usedPct = ((totalMin - freeMin) / totalMin) * 100;
+  return { freeMin, freeH, usedPct };
+}
+
+function renderFreeTime() {
+  const { freeMin, usedPct } = computeFreeTime();
+  document.getElementById('free-time-val').textContent = minToHuman(freeMin);
+  document.getElementById('free-time-total').textContent = '24';
+  document.getElementById('free-time-bar').style.width = (100 - usedPct) + '%';
+}
+
+// ============================================================
+// TIMELINE
+// ============================================================
+function renderTimeline() {
+  const bar = document.getElementById('timeline-bar');
+  const totalMin = 24 * 60;
+  const segs = buildTimelineSegments();
+
+  bar.innerHTML = segs.map(s => {
+    const widthPct = ((s.end - s.start) / totalMin) * 100;
+    return `<div class="timeline-segment" style="width:${widthPct}%;background:${s.color};opacity:${s.free?0.3:0.85};" title="${s.label}"></div>`;
+  }).join('');
+
+  // Now indicator
+  const nowPct = (nowMin() / totalMin) * 100;
+  bar.innerHTML += `<div class="timeline-now" style="left:${nowPct}%"></div>`;
+
+  // Legend
+  const usedTypes = [...new Set(segs.filter(s=>!s.free).map(s=>s.type))];
+  document.getElementById('timeline-legend').innerHTML = usedTypes.map(t =>
+    `<div class="tl-leg"><div class="tl-dot" style="background:${CAT_COLORS[t]||'var(--cat-fixed)'}"></div><span>${CAT_LABELS[t]||t}</span></div>`
+  ).join('') + `<div class="tl-leg"><div class="tl-dot" style="background:var(--cat-free);border:1px dashed rgba(255,255,255,0.2)"></div><span>⬜ Libre</span></div>`;
+}
+
+function buildTimelineSegments() {
+  const totalMin = 24 * 60;
+  const events = [];
+
+  for (const b of state.today.blocks) {
+    events.push({ start: b.start, end: b.end, type: b.type, free: false });
+  }
+
+  if (state.today.sleep) {
+    const s = state.today.sleep;
+    const bedMin  = s.bedtime  ? timeToMin(s.bedtime)  : 23*60;
+    const wakMin  = s.wakeup   ? timeToMin(s.wakeup)   : 7*60;
+    if (bedMin > wakMin) {
+      events.push({ start: 0,      end: wakMin,   type:'sleep', free:false });
+      events.push({ start: bedMin, end: totalMin,  type:'sleep', free:false });
+    } else {
+      events.push({ start: wakMin - (s.duration_minutes||420), end: wakMin, type:'sleep', free:false });
+    }
+  }
+
+  events.sort((a,b) => a.start - b.start);
+
+  // Fill gaps with "free"
+  const segs = [];
+  let cursor = 0;
+  for (const e of events) {
+    const s = Math.max(0, Math.min(e.start, totalMin));
+    const en = Math.max(0, Math.min(e.end, totalMin));
+    if (s > cursor) segs.push({ start:cursor, end:s, type:'free', color:CAT_COLORS.free, free:true, label:'Libre' });
+    segs.push({ ...e, color: CAT_COLORS[e.type] || CAT_COLORS.fixed, label: CAT_LABELS[e.type] || e.type });
+    cursor = en;
+  }
+  if (cursor < totalMin) segs.push({ start:cursor, end:totalMin, type:'free', color:CAT_COLORS.free, free:true, label:'Libre' });
+  return segs;
+}
+
+// ============================================================
+// SLEEP BANNER
+// ============================================================
+function renderSleepBanner() {
+  const banner = document.getElementById('sleep-banner');
+  if (!state.today.sleep) {
+    banner.style.display = 'flex';
+    document.getElementById('sleep-banner-title').textContent = '😴 Sommeil non enregistré';
+    document.getElementById('sleep-banner-detail').textContent = 'Enregistre ton sommeil pour calibrer les jauges';
+  } else {
+    const s = state.today.sleep;
+    banner.style.display = 'flex';
+    document.getElementById('sleep-banner-title').textContent = `😴 ${minToHuman(s.duration_minutes || 0)} • ${s.wakeup || '--:--'}`;
+    document.getElementById('sleep-banner-detail').textContent = `Qualité ${s.quality || '?'}/5 ★ — Plafond jauges : ${Math.round(state.gauges.ceiling*100)}%`;
+    document.querySelector('.sb-btn').textContent = '✏️ Modifier';
+  }
+}
+
+// ============================================================
+// TODAY ACTIVITIES
+// ============================================================
+function renderTodayActivities() {
+  const container = document.getElementById('today-activities');
+  const acts = state.today.activities;
+  if (!acts || acts.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">✨</div><div>Aucune activité loggée</div></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="activity-list">${acts.map((a,i) => {
+    const impHtml = Object.entries(a.impacts||{}).map(([k,v]) =>
+      `<span class="act-impact-tag ${v>0?'act-impact-pos':'act-impact-neg'}">${gaugeLabel(k)} ${v>0?'+':''}${v}</span>`
+    ).join('');
+    return `<div class="activity-row" onclick="deleteActivity(${i})">
+      <span class="act-icon">${catIcon(a.type)}</span>
+      <div class="act-info">
+        <div class="act-name">${a.name || CAT_LABELS[a.type] || a.type}</div>
+        <div class="act-meta">${a.start ? a.start+' — ' : ''}${minToHuman(a.duration||0)}</div>
+        ${impHtml ? `<div class="act-impacts">${impHtml}</div>` : ''}
+      </div>
+      <span class="act-time" style="font-size:16px;color:var(--text3)">×</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function gaugeLabel(id) {
+  const map = { energy:'⚡', focus:'🧠', wellbeing:'😊', sleep:'🌙', fitness:'💪' };
+  return map[id] || id;
+}
+
+function catIcon(type) {
+  const map = { sleep:'😴', work:'💼', sport:'💪', meal:'🍽', screen:'🎮', social:'👥', meditation:'🧘', positive:'📚', skill:'🎯', fixed:'🚗' };
+  return map[type] || '📌';
+}
+
+function deleteActivity(idx) {
+  if (!confirm('Supprimer cette activité ?')) return;
+  const a = state.today.activities[idx];
+  // Reverse impacts
+  if (a.impacts) {
+    const rev = {};
+    for (const [k,v] of Object.entries(a.impacts)) rev[k] = -v;
+    applyImpacts(rev);
+  }
+  // Remove block
+  state.today.blocks = state.today.blocks.filter(b => b._actIdx !== idx);
+  state.today.activities.splice(idx, 1);
+  saveKey(KEYS.today, state.today);
+  renderAll();
+  showToast('Activité supprimée');
+}
+
+// ============================================================
+// LOG ACTIVITY
+// ============================================================
+let _logModal_preType = null;
+
+function quickLog(type) {
+  if (type === 'sleep') { openModal('modal-sleep'); return; }
+  _logModal_preType = type;
+  openModal('modal-log');
+  setTimeout(() => selectLogType(type), 50);
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  if (id === 'modal-log') {
+    const now = new Date();
+    document.getElementById('log-start').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if (_logModal_preType) { selectLogType(_logModal_preType); _logModal_preType = null; }
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function selectLogType(type) {
+  logType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('selected', b.dataset.type === type));
+
+  // Show/hide sub-fields
+  const showSleep     = type === 'sleep';
+  const showIntensity = type === 'sport';
+  const showMeal      = type === 'meal';
+  const showRecovery  = type === 'sport';
+  const showSkill     = type === 'skill';
+
+  document.getElementById('log-sleep-rows').style.display    = showSleep     ? '' : 'none';
+  document.getElementById('log-duration-row').style.display  = showSleep     ? 'none' : '';
+  document.getElementById('log-intensity-row').style.display = showIntensity ? '' : 'none';
+  document.getElementById('log-meal-row').style.display      = showMeal      ? '' : 'none';
+  document.getElementById('log-recovery-row').style.display  = showRecovery  ? '' : 'none';
+  document.getElementById('log-skill-row').style.display     = showSkill     ? '' : 'none';
+
+  if (showSkill) renderSkillLogList();
+  updateImpactPreview();
+}
+
+function renderSkillLogList() {
+  const list = document.getElementById('skill-log-list');
+  if (state.skills.length === 0) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--text3);padding:8px">Aucune compétence créée. Va dans l'onglet Compétences.</div>`;
+    return;
+  }
+  list.innerHTML = state.skills.map(s =>
+    `<div class="skill-log-item ${selectedSkillId===s.id?'selected':''}" onclick="selectSkillForLog('${s.id}')">
+      <span class="sli-name">${s.icon||'🎯'} ${s.name}</span>
+      <span class="sli-level">${getSkillLevel(s)}</span>
+    </div>`
+  ).join('');
+}
+
+function selectSkillForLog(id) {
+  selectedSkillId = id;
+  renderSkillLogList();
+}
+
+function updateDurationDisplay() {
+  const v = parseInt(document.getElementById('log-duration').value);
+  document.getElementById('log-duration-display').textContent = minToHuman(v);
+  updateImpactPreview();
+}
+
+function selectIntensity(val, btn) {
+  logIntensity = val;
+  document.querySelectorAll('.int-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateImpactPreview();
+}
+
+function selectMealQuality(val, btn) {
+  logMealQuality = val;
+  document.querySelectorAll('#log-meal-row .int-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateImpactPreview();
+}
+
+function setSleepQuality(n) {
+  logSleepQuality = n;
+  document.querySelectorAll('#sleep-stars .star').forEach((s,i) => s.classList.toggle('on', i < n));
+}
+
+function setSleepQualityQuick(n) {
+  logSleepQualityQuick = n;
+  document.querySelectorAll('#sleep-stars-quick .star').forEach((s,i) => s.classList.toggle('on', i < n));
+}
+
+function toggleRecovery() {
+  logRecovery = !logRecovery;
+  const btn = document.getElementById('toggle-recovery');
+  btn.classList.toggle('on', logRecovery);
+  if (btn.querySelector('.toggle-thumb')) btn.querySelector('.toggle-thumb').style.left = logRecovery ? '21px' : '3px';
+  updateImpactPreview();
+}
+
+function updateImpactPreview() {
+  if (!logType) return;
+  const dur = parseInt(document.getElementById('log-duration')?.value || 60);
+  const impacts = calcImpacts(logType, dur, { intensity: logIntensity, mealQuality: logMealQuality, recovery: logRecovery });
+  const container = document.getElementById('impact-lines');
+  const entries = Object.entries(impacts).filter(([,v]) => v !== 0);
+  if (entries.length === 0) {
+    container.innerHTML = `<span style="font-size:10px;color:var(--text3)">Pas d'impact direct sur les jauges</span>`;
+    return;
+  }
+  container.innerHTML = entries.map(([k,v]) =>
+    `<span class="impact-line ${v>0?'impact-pos':'impact-neg'}">${gaugeLabel(k)} ${v>0?'+':''}${v}</span>`
+  ).join('');
+}
+
+function logActivity() {
+  if (!logType) { showToast('Choisis un type d\'activité'); return; }
+
+  let dur = parseInt(document.getElementById('log-duration')?.value || 60);
+  const name  = document.getElementById('log-name').value.trim();
+  const start = document.getElementById('log-start').value;
+
+  let impacts = {};
+
+  if (logType === 'sleep') {
+    // Use sleep modal instead
+    logSleepFromMainModal();
+    return;
+  }
+
+  impacts = calcImpacts(logType, dur, { intensity: logIntensity, mealQuality: logMealQuality, recovery: logRecovery });
+
+  const activity = {
+    type: logType,
+    name: name || null,
+    start,
+    duration: dur,
+    impacts,
+    intensity: logIntensity,
+    mealQuality: logMealQuality,
+    skillId: logType === 'skill' ? selectedSkillId : null,
+  };
+
+  state.today.activities.push(activity);
+
+  // Add block to timeline
+  if (start) {
+    const startMin = timeToMin(start);
+    state.today.blocks.push({ type: logType, start: startMin, end: startMin + dur, _actIdx: state.today.activities.length - 1 });
+  }
+
+  applyImpacts(impacts);
+
+  // XP for skill
+  if (logType === 'skill' && selectedSkillId) {
+    addSkillXP(selectedSkillId, dur);
+  }
+
+  saveKey(KEYS.today, state.today);
+  closeModal('modal-log');
+  document.getElementById('log-name').value = '';
+  logType = null;
+  logIntensity = 'light';
+  logRecovery = false;
+  selectedSkillId = null;
+
+  renderAll();
+  showToast('Activité enregistrée ✓');
+}
+
+function logSleepFromMainModal() {
+  closeModal('modal-log');
+  openModal('modal-sleep');
+}
+
+function logSleepQuick() {
+  const bedtime = document.getElementById('sleep-bedtime').value;
+  const wakeup  = document.getElementById('sleep-wakeup').value;
+  if (!bedtime || !wakeup) { showToast('Heure manquante'); return; }
+
+  let bedMin = timeToMin(bedtime);
+  const wakMin = timeToMin(wakeup);
+  let dur;
+  if (bedMin > wakMin) dur = (24*60 - bedMin) + wakMin;
+  else dur = wakMin - bedMin;
+
+  state.today.sleep = {
+    bedtime, wakeup,
+    duration_minutes: dur,
+    quality: logSleepQualityQuick,
+    source: 'manual',
+  };
+  state.today.gaugeAtStart = null;
+
+  saveKey(KEYS.today, state.today);
+  applyGaugeImpactsForToday();
+  closeModal('modal-sleep');
+  renderAll();
+  showToast(`Sommeil enregistré — ${minToHuman(dur)} ✓`);
+}
+
+// ============================================================
+// SKILLS
+// ============================================================
+function getSkillLevel(skill) {
+  const xp = skill.xp || 0;
+  let lvl = 0;
+  for (let i = XP_PER_LEVEL.length - 1; i >= 0; i--) {
+    if (xp >= XP_PER_LEVEL[i]) { lvl = i; break; }
+  }
+  return SKILL_LEVELS[lvl] || 'Débutant';
+}
+
+function getSkillLevelIdx(skill) {
+  const xp = skill.xp || 0;
+  for (let i = XP_PER_LEVEL.length - 1; i >= 0; i--) {
+    if (xp >= XP_PER_LEVEL[i]) return i;
+  }
+  return 0;
+}
+
+function getSkillXpPct(skill) {
+  const xp = skill.xp || 0;
+  const lvl = getSkillLevelIdx(skill);
+  const next = XP_PER_LEVEL[lvl + 1];
+  if (!next) return 100;
+  const cur = XP_PER_LEVEL[lvl];
+  return Math.round(((xp - cur) / (next - cur)) * 100);
+}
+
+function addSkillXP(skillId, durMin) {
+  const skill = state.skills.find(s => s.id === skillId);
+  if (!skill) return;
+  // XP: durMin/10, with streak bonus
+  const base = Math.round(durMin / 10);
+  const streak = skill.streak || 0;
+  const bonus = streak >= 7 ? 2 : streak >= 3 ? 1.5 : 1;
+  skill.xp = (skill.xp || 0) + Math.round(base * bonus);
+
+  // Update streak
+  const today = todayStr();
+  if (skill.lastLogDate === today) {
+    // already logged today, no streak change
+  } else {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    if (skill.lastLogDate === yesterday) {
+      skill.streak = (skill.streak || 0) + 1;
+    } else {
+      skill.streak = 1;
+    }
+    skill.lastLogDate = today;
+  }
+  skill.totalMin = (skill.totalMin || 0) + durMin;
+  saveKey(KEYS.skills, state.skills);
+}
+
+function renderSkills() {
+  const list = document.getElementById('skill-list');
+  if (state.skills.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div><div>Aucune compétence créée</div><div style="font-size:10px;margin-top:8px;color:var(--text3)">Ajoute tes objectifs ci-dessous</div></div>`;
+    return;
+  }
+  list.innerHTML = state.skills.map(s => {
+    const xpPct = getSkillXpPct(s);
+    const level = getSkillLevel(s);
+    const levelIdx = getSkillLevelIdx(s);
+    const nextXp = XP_PER_LEVEL[levelIdx+1];
+    return `<div class="skill-item">
+      <div class="skill-header">
+        <span class="skill-name">${s.icon||'🎯'} ${s.name}</span>
+        <span class="skill-level">${level}</span>
+      </div>
+      <div class="skill-meta">
+        <span class="skill-stat">🔥 Streak <span>${s.streak||0}j</span></span>
+        <span class="skill-stat">⏱ Total <span>${minToHuman(s.totalMin||0)}</span></span>
+        <span class="skill-stat">XP <span>${s.xp||0}${nextXp?'/'+nextXp:''}</span></span>
+      </div>
+      <div class="skill-xp-track">
+        <div class="skill-xp-fill" style="width:${xpPct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addSkill() {
+  const name = document.getElementById('new-skill-name').value.trim();
+  if (!name) { showToast('Entre un nom de compétence'); return; }
+  const icon = document.getElementById('new-skill-icon').value.trim() || '🎯';
+  const category = document.getElementById('new-skill-category').value;
+  const skill = {
+    id: 'skill_' + Date.now(),
+    name, icon, category,
+    xp: 0, streak: 0, totalMin: 0, lastLogDate: null,
+  };
+  state.skills.push(skill);
+  saveKey(KEYS.skills, state.skills);
+  closeModal('modal-add-skill');
+  document.getElementById('new-skill-name').value = '';
+  document.getElementById('new-skill-icon').value = '';
+  renderSkills();
+  showToast(`${icon} ${name} créée ✓`);
+}
+
+// ============================================================
+// ARCHIVE DAY
+// ============================================================
+function archiveDay() {
+  if (!state.today || !state.today.date) return;
+  const score = computeDayScore();
+  const entry = {
+    date: state.today.date,
+    sleep: state.today.sleep,
+    activities: state.today.activities,
+    gauges: { ...state.gauges.values },
+    score,
+  };
+  state.history = state.history.filter(h => h.date !== entry.date);
+  state.history.push(entry);
+  // Keep max 365 days
+  if (state.history.length > 365) state.history = state.history.slice(-365);
+  saveKey(KEYS.history, state.history);
+}
+
+function computeDayScore() {
+  const gv = state.gauges.values;
+  const avg = Object.values(gv).reduce((a,b) => a+b, 0) / Object.keys(gv).length;
+  return Math.round(avg);
+}
+
+// ============================================================
+// HISTORY CALENDAR
+// ============================================================
+function renderCalendar() {
+  const label = document.getElementById('cal-month-label');
+  const grid  = document.getElementById('cal-grid');
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  label.textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+  const dows = ['L','M','M','J','V','S','D'];
+  const todayFull = todayStr();
+
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  const firstDow = new Date(calYear, calMonth, 1).getDay(); // 0=sun
+  const offset   = firstDow === 0 ? 6 : firstDow - 1; // Mon=0
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFuture = dateStr > todayFull;
+    const isToday  = dateStr === todayFull;
+    const hist = state.history.find(h => h.date === dateStr);
+    let cls = '';
+    if (isFuture) cls = 'future';
+    else if (isToday) cls = 'score-high today';
+    else if (hist) {
+      if (hist.score >= 70) cls = 'score-high';
+      else if (hist.score >= 45) cls = 'score-mid';
+      else cls = 'score-low';
+    } else {
+      cls = 'no-data';
+    }
+    html += `<div class="cal-day ${cls}" onclick="showDayDetail('${dateStr}')">${d}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function showDayDetail(dateStr) {
+  const hist = state.history.find(h => h.date === dateStr);
+  const detail = document.getElementById('history-detail');
+  const content = document.getElementById('hd-content');
+  const title   = document.getElementById('hd-date');
+  detail.style.display = '';
+
+  if (!hist) {
+    if (dateStr === todayStr()) {
+      title.textContent = "Aujourd'hui";
+      content.innerHTML = `<div style="font-size:11px;color:var(--text3)">Journée en cours — les données seront archivées demain.</div>`;
+    } else {
+      title.textContent = dateStr;
+      content.innerHTML = `<div style="font-size:11px;color:var(--text3)">Aucune donnée pour ce jour.</div>`;
+    }
+    return;
+  }
+
+  title.textContent = dateStr;
+  const scoreTag = hist.score >= 70
+    ? `<span class="day-score-badge dsb-high">Score ${hist.score}% ↑</span>`
+    : hist.score >= 45
+    ? `<span class="day-score-badge dsb-mid">Score ${hist.score}%</span>`
+    : `<span class="day-score-badge dsb-low">Score ${hist.score}% ↓</span>`;
+
+  const sleepTxt = hist.sleep ? `😴 ${minToHuman(hist.sleep.duration_minutes||0)} — qualité ${hist.sleep.quality||'?'}/5 ★` : '😴 Pas de donnée sommeil';
+  const actTxt = hist.activities && hist.activities.length > 0
+    ? hist.activities.map(a => `<div style="font-size:11px;color:var(--text2);padding:2px 0">• ${catIcon(a.type)} ${a.name || CAT_LABELS[a.type] || a.type} — ${minToHuman(a.duration||0)}</div>`).join('')
+    : `<div style="font-size:11px;color:var(--text3)">Aucune activité loggée</div>`;
+
+  content.innerHTML = `
+    <div style="margin-bottom:8px">${scoreTag}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${sleepTxt}</div>
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Activités</div>
+    ${actTxt}
+  `;
+}
+
+// ============================================================
+// CONFIG
+// ============================================================
+function applyConfig() {
+  const c = state.config;
+  if (!c) return;
+  document.getElementById('cfg-work-start').value    = c.workStart    || '08:30';
+  document.getElementById('cfg-work-midend').value   = c.workMidEnd   || '12:30';
+  document.getElementById('cfg-work-midstart').value = c.workMidStart || '14:00';
+  document.getElementById('cfg-work-end').value      = c.workEnd      || '18:00';
+  document.getElementById('cfg-screen-week').value   = c.screenWeek   || '20:00';
+  document.getElementById('cfg-screen-weekend').value= c.screenWeekend|| '21:00';
+  const tw = document.getElementById('toggle-weekend');
+  tw.classList.toggle('on', !!c.weekend);
+  setToggleThumb(tw, !!c.weekend);
+}
+
+function toggleCfg(key) {
+  if (key === 'weekend') {
+    state.config.weekend = !state.config.weekend;
+    const tw = document.getElementById('toggle-weekend');
+    tw.classList.toggle('on', state.config.weekend);
+    setToggleThumb(tw, state.config.weekend);
+  }
+}
+
+function setToggleThumb(btn, on) {
+  let thumb = btn.querySelector('.toggle-thumb');
+  if (!thumb) {
+    thumb = document.createElement('div');
+    thumb.className = 'toggle-thumb';
+    btn.appendChild(thumb);
+  }
+  thumb.style.left = on ? '21px' : '3px';
+}
+
+function saveConfig() {
+  state.config.workStart    = document.getElementById('cfg-work-start').value;
+  state.config.workMidEnd   = document.getElementById('cfg-work-midend').value;
+  state.config.workMidStart = document.getElementById('cfg-work-midstart').value;
+  state.config.workEnd      = document.getElementById('cfg-work-end').value;
+  state.config.screenWeek   = document.getElementById('cfg-screen-week').value;
+  state.config.screenWeekend= document.getElementById('cfg-screen-weekend').value;
+  saveKey(KEYS.config, state.config);
+
+  // Re-build work blocks for today
+  const dow = new Date().getDay();
+  const isWorkDay = (dow >= 1 && dow <= 5) || state.config.weekend;
+  state.today.blocks = state.today.blocks.filter(b => b.type !== 'work');
+  if (isWorkDay) {
+    state.today.blocks.push({ type:'work', start: timeToMin(state.config.workStart),    end: timeToMin(state.config.workMidEnd) });
+    state.today.blocks.push({ type:'work', start: timeToMin(state.config.workMidStart), end: timeToMin(state.config.workEnd)   });
+  }
+  saveKey(KEYS.today, state.today);
+  renderAll();
+  showToast('Configuration sauvegardée ✓');
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportData() {
+  const data = {
+    exportDate: new Date().toISOString(),
+    version: 1,
+    config:  state.config,
+    today:   state.today,
+    history: state.history,
+    skills:  state.skills,
+    gauges:  state.gauges,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `life-rpg-vie-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  state.config.lastExport = todayStr();
+  saveKey(KEYS.config, state.config);
+  showToast('Export téléchargé ✓');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.config)  { state.config  = data.config;  saveKey(KEYS.config, state.config); }
+      if (data.today)   { state.today   = data.today;   saveKey(KEYS.today, state.today); }
+      if (data.history) { state.history = data.history; saveKey(KEYS.history, state.history); }
+      if (data.skills)  { state.skills  = data.skills;  saveKey(KEYS.skills, state.skills); }
+      if (data.gauges)  { state.gauges  = data.gauges;  saveKey(KEYS.gauges, state.gauges); }
+      renderAll();
+      showToast('Import réussi ✓');
+    } catch {
+      showToast('Erreur lecture fichier');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function importClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    processImportJson(text);
+  } catch {
+    showToast('Impossible de lire le presse-papier');
+  }
+}
+
+// ============================================================
+// IOS IMPORT HELPERS
+// ============================================================
+
+// Handles standard + URL-safe base64, missing padding
+function decodeBase64Safe(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return atob(str);
+}
+
+// Parses any iOS date value → "YYYY-MM-DD"
+function parseIosDate(val) {
+  if (!val) return todayStr();
+  if (typeof val === 'number') {
+    const ms = val > 1e10 ? val : val * 1000;
+    return new Date(ms).toISOString().slice(0, 10);
+  }
+  if (typeof val === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    try { return new Date(val).toISOString().slice(0, 10); } catch {}
+  }
+  return todayStr();
+}
+
+// Parses any iOS time value → "HH:MM"
+function parseIosTime(val) {
+  if (!val) return null;
+  if (typeof val === 'string') {
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(val)) return val.slice(0, 5);
+    // ISO 8601 — extract local time from the offset
+    const m = val.match(/T(\d{2}):(\d{2})/);
+    if (m) {
+      // If there's a timezone offset, adjust
+      try {
+        const d = new Date(val);
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      } catch { return `${m[1]}:${m[2]}`; }
+    }
+    try {
+      const d = new Date(val);
+      if (!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } catch {}
+  }
+  if (typeof val === 'number') {
+    const ms = val > 1e10 ? val : val * 1000;
+    const d = new Date(ms);
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  return null;
+}
+
+// Infer quality (1-5) from duration since phases aren't available
+function sleepQualityFromDuration(minutes) {
+  if (minutes >= 480) return 5;
+  if (minutes >= 420) return 4;
+  if (minutes >= 360) return 3;
+  if (minutes >= 300) return 2;
+  return 1;
+}
+
+function processImportJson(raw) {
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    showToast('Données illisibles — vérifiez le raccourci');
+    return;
+  }
+
+  if (data.type === 'sleep') {
+    const dur  = Number(data.duration_minutes) || 0;
+    const date = parseIosDate(data.date);
+    const bed  = parseIosTime(data.bedtime);
+    const wak  = parseIosTime(data.wakeup);
+
+    // If import is for today or yesterday, always store on today's record
+    state.today.sleep = {
+      bedtime:          bed,
+      wakeup:           wak,
+      duration_minutes: dur,
+      quality:          sleepQualityFromDuration(dur),
+      source:           'apple_watch',
+      importedDate:     date,
+    };
+    state.today.gaugeAtStart = null;
+    saveKey(KEYS.today, state.today);
+    applyGaugeImpactsForToday();
+    renderAll();
+    showToast(`😴 ${minToHuman(dur)} importé depuis Apple Watch ✓`);
+
+  } else if (data.type === 'workout') {
+    const dur       = Number(data.duration_minutes) || 30;
+    const avgHr     = Number(data.avg_hr) || 0;
+    const intensity = avgHr >= 150 ? 'intense' : avgHr >= 120 ? 'moderate' : 'light';
+    const impacts   = calcImpacts('sport', dur, { intensity });
+    const actName   = data.activity || 'Sport';
+
+    state.today.activities.push({
+      type: 'sport', name: actName,
+      start: null, duration: dur, impacts, intensity,
+      calories: data.calories || null,
+      source: 'apple_watch',
+    });
+    applyImpacts(impacts);
+    saveKey(KEYS.today, state.today);
+    renderAll();
+    showToast(`💪 ${actName} (${minToHuman(dur)}) importé ✓`);
+
+  } else {
+    showToast(`Format non reconnu (type: "${data.type || '?'}")`);
+  }
+}
+
+function checkImportUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('import');
+  if (!raw) return;
+  try {
+    const decoded = decodeBase64Safe(raw);
+    processImportJson(decoded);
+  } catch (e) {
+    showToast('Erreur décodage Base64 — vérifiez le raccourci');
+  }
+  // Clean URL regardless of success
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
+function resetData() {
+  if (!confirm('Effacer TOUTES les données du module Vie ? Action irréversible.')) return;
+  Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ============================================================
+// EXPORT REMINDER
+// ============================================================
+function checkExportReminder() {
+  const last = state.config?.lastExport;
+  if (!last) return;
+  const diffDays = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
+  if (diffDays >= 3) {
+    setTimeout(() => {
+      if (confirm(`Dernier export il y a ${diffDays} jours. Exporter maintenant ?`)) exportData();
+    }, 2000);
+  }
+}
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  btn.classList.add('active');
+
+  if (id === 'history') {
+    calYear  = new Date().getFullYear();
+    calMonth = new Date().getMonth();
+    renderCalendar();
+  }
+  if (id === 'skills') renderSkills();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// MODALS: close on backdrop click
+// ============================================================
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => {
+    if (e.target === ov) ov.classList.remove('show');
+  });
+});
+
+// ============================================================
+// TOGGLE THUMB INIT
+// ============================================================
+document.querySelectorAll('.toggle').forEach(t => {
+  const on = t.classList.contains('on');
+  const thumb = document.createElement('div');
+  thumb.className = 'toggle-thumb';
+  thumb.style.left = on ? '21px' : '3px';
+  t.appendChild(thumb);
+});
+
+// ============================================================
+// START
+// ============================================================
+init();
+tickClock();
+</script>
+</body>
+</html>
