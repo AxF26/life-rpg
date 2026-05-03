@@ -1830,7 +1830,7 @@ function checkImportUrl() {
       saveKey(KEYS.today, state.today);
       applyGaugeImpactsForToday();
       renderAll();
-      showToast(`😴 ${minToHuman(dur)} importé ✓`);
+      showToastLong(`DEBUG bed=${bedtime} wak=${wakeup} dur_raw=${params.get('duration')} → ${dur}min`);
     } else if (type === 'workout') {
       const dur       = Number(params.get('duration')) || 30;
       const avgHr     = Number(params.get('avg_hr'))   || 0;
