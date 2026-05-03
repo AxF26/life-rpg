@@ -1751,7 +1751,9 @@ function processImportJson(raw) {
   try {
     data = JSON.parse(raw);
   } catch {
-    showToast('Données illisibles — vérifiez le raccourci');
+    // Debug : affiche les 80 premiers caractères reçus
+    const preview = raw ? raw.slice(0, 80).replace(/\n/g,'↵') : '(vide)';
+    showToastLong('❌ JSON invalide. Reçu : ' + preview);
     return;
   }
 
@@ -1863,6 +1865,15 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+function showToastLong(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.whiteSpace = 'normal';
+  t.style.maxWidth = '90vw';
+  t.style.textAlign = 'left';
+  t.classList.add('show');
+  setTimeout(() => { t.classList.remove('show'); t.style.whiteSpace = ''; t.style.maxWidth = ''; }, 8000);
 }
 
 // ============================================================
