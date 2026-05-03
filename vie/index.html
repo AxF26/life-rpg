@@ -1660,11 +1660,19 @@ async function importClipboard() {
 // IOS IMPORT HELPERS
 // ============================================================
 
-// Handles standard + URL-safe base64, missing padding
+// Handles standard + URL-safe base64, missing padding, UTF-8 content
 function decodeBase64Safe(str) {
+  // URLSearchParams.get() decodes '+' as space — restore them
+  str = str.replace(/ /g, '+');
+  // URL-safe base64: - → +, _ → /
   str = str.replace(/-/g, '+').replace(/_/g, '/');
+  // Re-add stripped padding
   while (str.length % 4) str += '=';
-  return atob(str);
+  // atob gives a binary string; decode as UTF-8 to handle accents (à, é…)
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
 }
 
 const FR_MONTHS = {
