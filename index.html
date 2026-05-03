@@ -855,7 +855,8 @@ function update(){
   // Retour à zéro
   const rzEl=document.getElementById('return-zero');
   if(cagnotte<0 && cfg.salary>0){
-    const dailyRateOuvré=cfg.salary/countWorkdaysInMonth(now.getFullYear(),now.getMonth());
+    const netMonthly=cfg.salary-totalCharges()-cfg.savings;
+    const dailyRateOuvré=netMonthly/countWorkdaysInMonth(now.getFullYear(),now.getMonth());
     const workMinsPerDay=(toMin(cfg.amE)-toMin(cfg.amS))+(toMin(cfg.pmE)-toMin(cfg.pmS));
     const ratePerMin=dailyRateOuvré/workMinsPerDay;
     // Minutes restantes aujourd'hui
@@ -956,10 +957,12 @@ function renderTxList(){
     const d=txDateObj.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+txDateObj.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     const scheduleInfo=tx.schedule&&tx.schedule!=='instant'?` · étalé ${tx.schedule==='day'?'journée':tx.plageS+'→'+tx.plageE}`:'';
     const plannedBadge=isFuture?'<span class="tx-planned-badge">planifié</span>':'';
-    // Équivalent jours ouvrés
-    const dailyRate2=cfg.salary>0?cfg.salary/22:0;
-    const jours=dailyRate2>0?(tx.amount/dailyRate2).toFixed(1):null;
-    const joursInfo=jours?`<span class="tx-days-info"><span class="tx-days-badge">i</span><span class="tx-days-tooltip">${jours} jour(s) ouvré(s) de travail</span></span>`:'';
+    // Équivalent jours ouvrés — basé sur l'augmentation nette de la cagnotte
+    const netM=cfg.salary-totalCharges()-cfg.savings;
+    const wdM=countWorkdaysInMonth(new Date().getFullYear(),new Date().getMonth());
+    const dailyNetRate=wdM>0?netM/wdM:0;
+    const jours=dailyNetRate>0?(tx.amount/dailyNetRate).toFixed(1):null;
+    const joursInfo=jours?`<span class="tx-days-info"><span class="tx-days-badge">i</span><span class="tx-days-tooltip">${jours} jour(s) de cagnotte nette</span></span>`:'';
     return`<div class="tx-item${isFuture?' planned':''}">
       <div class="tx-left">
         <div class="tx-name">${tx.name}${plannedBadge}</div>
