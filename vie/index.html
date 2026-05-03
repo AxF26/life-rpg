@@ -1757,8 +1757,6 @@ function processImportJson(raw) {
       dur = bedM > wakM ? (24*60 - bedM) + wakM : wakM - bedM;
     }
     const date = parseIosDate(data.date);
-    const bed  = parseIosTime(data.bedtime);
-    const wak  = parseIosTime(data.wakeup);
 
     // If import is for today or yesterday, always store on today's record
     state.today.sleep = {
