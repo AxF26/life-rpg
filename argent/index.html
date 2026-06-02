@@ -1122,7 +1122,7 @@ function renderHistory(){
   const allKeys=Object.keys(data.monthData).sort().reverse();
 
   // Épargne totale
-  document.getElementById('epargne-totale').textContent=fmtAbs(data.totalEpargne||0);
+  const ep=data.totalEpargne||0;document.getElementById('epargne-totale').textContent=(ep<0?'−':'')+fmtAbs(ep);
 
   // Vérifier fin de mois précédent non clôturé
   const eomSection=document.getElementById('eom-banner-section');
@@ -1161,8 +1161,10 @@ function renderHistory(){
     const mName=d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
     let txDep=0,txRev=0;
     md.transactions.forEach(tx=>{if(tx.type==='dep')txDep+=tx.amount;else txRev+=tx.amount;});
-    const solde=isCur?null:(cfg.salary - totalCharges() - cfg.savings + txRev - txDep + (md.report||0));
-    const soldeStr=isCur?'en cours':(solde>=0?'+':'')+fmtAbs(solde);
+    // Bug 2 fix : pour les mois clôturés, utiliser le solde final stocké à la clôture
+    const solde=isCur?null:(md.closed&&md.finalSolde!==undefined?md.finalSolde:(cfg.salary - totalCharges() - cfg.savings + txRev - txDep + (md.report||0)));
+    // Bug 1 fix : afficher le signe − pour les soldes négatifs
+    const soldeStr=isCur?'en cours':(solde>=0?'+':'−')+fmtAbs(solde);
     const soldeColor=isCur?'c-dim':solde>=0?'c-green':'c-red';
     return`<div class="month-card ${isCur?'current':''}">
       <div class="month-card-header">
@@ -1174,7 +1176,7 @@ function renderHistory(){
         <div class="month-stat"><div class="month-stat-label">Dépenses saisies</div><div class="month-stat-val c-red">−${fmtAbs(txDep)}</div></div>
         <div class="month-stat"><div class="month-stat-label">Report reçu</div><div class="month-stat-val c-dim">${md.report?fmt(md.report):'—'}</div></div>
       </div>
-      ${md.closed?`<div style="margin-top:8px;font-size:10px;color:var(--text3);letter-spacing:0.05em">${md.closedTo==='epargne'?'→ affecté à l\'épargne':'→ reporté en pouvoir d\'achat'}</div>`:''}
+      ${md.closed?`<div style="margin-top:8px;font-size:10px;color:var(--text3);letter-spacing:0.05em">${md.closedTo==='epargne'?`→ épargne : +${fmtAbs(cfg.savings)} objectif + (${solde>=0?'+':'−'}${fmtAbs(solde)}) solde`:'→ reporté en pouvoir d\'achat'}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1293,11 +1295,14 @@ function renderChart(){
 
 function closeMonth(mk,solde,dest){
   const md=getMonthData(mk);
-  md.closed=true;md.closedTo=dest;md.finalSolde=solde;
+  md.closed=true;md.closedTo=dest;md.finalSolde=solde;md.savingsGoalAtClose=cfg.savings;
   if(dest==='epargne'){
-    data.totalEpargne=(data.totalEpargne||0)+solde;
+    // Bug 3 fix : cumul = objectif mensuel épargne + solde final du mois
+    data.totalEpargne=(data.totalEpargne||0)+cfg.savings+solde;
   } else {
-    // Report sur le mois suivant
+    // Objectif épargne mensuel toujours accumulé même en pouvoir d'achat
+    data.totalEpargne=(data.totalEpargne||0)+cfg.savings;
+    // Report du solde sur le mois suivant
     const d=new Date(mk+'-01');const nextD=new Date(d.getFullYear(),d.getMonth()+1,1);
     const nextMk=monthKey(nextD);const nextMd=getMonthData(nextMk);
     nextMd.report=(nextMd.report||0)+solde;
